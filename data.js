@@ -1,4 +1,3 @@
-
 if (e.detail.type === 'VKWebAppInitResult') {
   const user = e.detail.data;
   // Проверка: если имя есть — показываем его, если нет — показываем запасной текст
