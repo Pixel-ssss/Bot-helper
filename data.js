@@ -1,5 +1,3 @@
-import { someFunction } from './utils.js'; // Если есть импорты, пути должны быть верными
-
 // Инициализация
 vkBridge.send('VKWebAppInit');
 
