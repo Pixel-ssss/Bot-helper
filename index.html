@@ -29,31 +29,39 @@
     <script src="https://unpkg.com/@vkontakte/vk-bridge/dist/browser.min.js"></script>
     
     <!-- 2. Потом твой код логики -->
-    <script>
-      // Инициализируем мост сразу после загрузки скрипта
+        <script>
+      // 1. Инициализируем приложение VK
       vkBridge.send('VKWebAppInit');
-
-      // Слушаем событие инициализации приложения от VK
-      vkBridge.on('VKWebAppInit', () => {
-        // Теперь безопасно работаем с API
-        
-        // Загрузка профиля
+    
+      // 2. Подписываемся на событие инициализации (НЕ vkBridge.on!)
+      vkBridge.subscribe((e) => {
+        if (e.detail.type !== 'VKWebAppInit') return;
+    
+        // 3. Получаем данные пользователя
         vkBridge.send('VKWebAppGetUserInfo')
-          .then(data => {
-            const user = data.user;
+          .then(response => {
+            const user = response.user;
             const avatarEl = document.getElementById('user-avatar');
             const nameEl = document.getElementById('user-name');
-            
-            if (avatarEl) avatarEl.src = user.photo_200 || user.photo_100 || 'https://via.placeholder.com/48';
-            if (nameEl) nameEl.textContent = `${user.first_name} ${user.last_name}`;
+    
+            if (avatarEl) {
+              avatarEl.src = user.photo_200 || user.photo_100 || 'https://via.placeholder.com/48';
+            }
+            if (nameEl) {
+              nameEl.textContent = `${user.first_name} ${user.last_name}`;
+            }
           })
           .catch(err => {
-            console.error('Ошибка профиля:', err);
+            console.error('Ошибка получения данных пользователя:', err);
           });
-
-        // Рендер фракций
+    
+        // 4. Рендер контента (фракции, классы)
+        renderContent();
+      });
+    
+      function renderContent() {
         const factionsContainer = document.getElementById('factions-container');
-        if (factionsContainer && window.gameData && window.gameData.factions) {
+        if (factionsContainer && window.gameData?.factions) {
           factionsContainer.innerHTML = window.gameData.factions.map(f => `
             <div class="card">
               <h3>\${f.name}</h3>
@@ -66,10 +74,9 @@
             </div>
           `).join('');
         }
-
-        // Рендер классов
+    
         const classesContainer = document.getElementById('classes-container');
-        if (classesContainer && window.gameData && window.gameData.classes) {
+        if (classesContainer && window.gameData?.classes) {
           classesContainer.innerHTML = window.gameData.classes.map(c => `
             <div class="card">
               <h3>\${c.name}</h3>
@@ -82,7 +89,7 @@
             </div>
           `).join('');
         }
-      });
+      }
     </script>
   </body>
 </html>
