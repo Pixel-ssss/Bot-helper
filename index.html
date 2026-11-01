@@ -5,27 +5,55 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Помощник по игре</title>
     <link rel="stylesheet" href="style.css">
-    <!-- Подключаем VK Bridge (обязательно для Mini App) -->
+    <!-- Подключаем VK Bridge -->
     <script src="https://unpkg.com/@vkontakte/vk-bridge/dist/browser.min.js"></script>
+    <!-- ВАЖНО: Подключаем файл с данными ДО основного скрипта -->
+    <script src="data.js"></script>
   </head>
   <body>
-    <div class="header">Помощник по игре: справочник</div>
+    <!-- Блок профиля пользователя -->
+    <div id="user-info" style="padding: 10px; border-bottom: 1px solid #eee;">
+      <img id="user-avatar" src="" alt="" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover; vertical-align: middle;">
+      <span id="user-name" style="margin-left: 10px; font-weight: bold; vertical-align: middle;"></span>
+    </div>
 
+    <!-- Контейнер для боссов -->
     <div id="bosses-container"></div>
 
-    <script src="data.js"></script>
     <script>
-      // Инициализация VK Bridge
+      // 1. Инициализация VK Bridge
       vkBridge.send('VKWebAppInit');
 
+      // 2. Получение данных пользователя (только ОДИН раз!)
+      vkBridge.send('VKWebAppGetUserInfo')
+        .then(data => {
+          const user = data.user;
+          const avatarEl = document.getElementById('user-avatar');
+          const nameEl = document.getElementById('user-name');
+          
+          if (avatarEl) avatarEl.src = user.photo_200 || user.photo_100;
+          if (nameEl) nameEl.textContent = `${user.first_name} ${user.last_name}`;
+        })
+        .catch(err => console.error('Ошибка получения данных пользователя:', err));
+
+      // 3. Рендер боссов
       const container = document.getElementById('bosses-container');
 
       function renderBosses() {
+        if (!container) {
+          console.error('Элемент #bosses-container не найден');
+          return;
+        }
+        if (typeof bosses === 'undefined') {
+          console.error('Массив bosses не найден. Проверьте подключение data.js');
+          return;
+        }
+
         container.innerHTML = bosses.map(b => `
           <div class="boss-card">
-            <div class="boss-name">${b.name}</div>
-            <div class="weakness">Уязвимость: ${b.weakness}</div>
-            <div class="tactic"><strong>Тактика:</strong> ${b.tactic}</div>
+            <div class="boss-name">\${b.name}</div>
+            <div class="weakness">Уязвимость: \${b.weakness}</div>
+            <div class="tactic"><strong>Тактика:</strong> \${b.tactic}</div>
             <div class="drops"><strong>Выпадает:</strong>
               <ul class="drops-list">
                 ${b.drops.map(drop => `<li>${drop}</li>`).join('')}
@@ -35,7 +63,9 @@
         `).join('');
       }
 
+      // 4. Вызов функции
       renderBosses();
     </script>
   </body>
 </html>
+
