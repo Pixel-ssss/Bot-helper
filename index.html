@@ -29,15 +29,13 @@
     <script src="https://unpkg.com/@vkontakte/vk-bridge/dist/browser.min.js"></script>
     
     <!-- 2. Потом твой код логики -->
-        <script>
-      // 1. Инициализируем приложение VK
-      vkBridge.send('VKWebAppInit');
-    
-      // 2. Подписываемся на событие инициализации (НЕ vkBridge.on!)
+    <script>
+      // 1. Сначала подписываемся на событие готовности VK Bridge
       vkBridge.subscribe((e) => {
+        // 2. Проверяем, что это именно событие инициализации приложения
         if (e.detail.type !== 'VKWebAppInit') return;
     
-        // 3. Получаем данные пользователя
+        // 3. Теперь безопасно запрашиваем данные пользователя
         vkBridge.send('VKWebAppGetUserInfo')
           .then(response => {
             const user = response.user;
@@ -45,6 +43,7 @@
             const nameEl = document.getElementById('user-name');
     
             if (avatarEl) {
+              // Пробуем фото в порядке убывания качества
               avatarEl.src = user.photo_200 || user.photo_100 || 'https://via.placeholder.com/48';
             }
             if (nameEl) {
@@ -53,9 +52,11 @@
           })
           .catch(err => {
             console.error('Ошибка получения данных пользователя:', err);
+            // Для отладки можно вывести сообщение в UI
+            document.getElementById('user-name').textContent = 'Не удалось загрузить профиль';
           });
     
-        // 4. Рендер контента (фракции, классы)
+        // 4. Рендер остального контента (фракции, классы)
         renderContent();
       });
     
@@ -64,13 +65,13 @@
         if (factionsContainer && window.gameData?.factions) {
           factionsContainer.innerHTML = window.gameData.factions.map(f => `
             <div class="card">
-              <h3>\${f.name}</h3>
-              <span class="badge">\${f.type}</span>
-              <p style="color:#5b616e; line-height:1.4;">\${f.description}</p>
+              <h3>${f.name}</h3>
+              <span class="badge">${f.type}</span>
+              <p style="color:#5b616e; line-height:1.4;">${f.description}</p>
               <ul class="list-bullet">
                 ${f.bonuses.map(b => `<li>${b}</li>`).join('')}
               </ul>
-              <span class="weakness">Слабость: \${f.weakness}</span>
+              <span class="weakness">Слабость: ${f.weakness}</span>
             </div>
           `).join('');
         }
@@ -79,9 +80,9 @@
         if (classesContainer && window.gameData?.classes) {
           classesContainer.innerHTML = window.gameData.classes.map(c => `
             <div class="card">
-              <h3>\${c.name}</h3>
-              <span class="badge">Роль: \${c.role}</span>
-              <p style="color:#5b616e; line-height:1.4;">\${c.playstyle}</p>
+              <h3>${c.name}</h3>
+              <span class="badge">Роль: ${c.role}</span>
+              <p style="color:#5b616e; line-height:1.4;">${c.playstyle}</p>
               <p><strong>Лучше всего сочетается с:</strong></p>
               <ul class="list-bullet">
                 ${c.bestWith.map(t => `<li>${t}</li>`).join('')}
