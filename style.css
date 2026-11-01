@@ -59,12 +59,14 @@ h2 {
   padding: 0;
   margin: 8px 0 0 0;
 }
+
 .list-bullet li {
   color: #4a4e58;
   margin-bottom: 6px;
   padding-left: 10px;
   position: relative;
 }
+
 .list-bullet li::before {
   content: "•";
   color: #aab0bc;
@@ -100,3 +102,4 @@ h2 {
   padding: 32px;
   color: #8b93a0;
 }
+
