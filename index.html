@@ -4,51 +4,53 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Warlord Bot</title>
-    <link rel="stylesheet" href="style.css">
-    <!-- VK Bridge -->
+    <!-- Подключаем VK Bridge -->
     <script src="https://unpkg.com/@vkontakte/vk-bridge/dist/browser.min.js"></script>
-    <!-- Данные (должно быть ДО скрипта логики) -->
+    <!-- Подключаем данные (ОБЯЗАТЕЛЬНО до основного скрипта) -->
     <script src="data.js"></script>
   </head>
   <body>
-    <!-- Профиль -->
     <div id="user-info" style="padding: 10px; border-bottom: 1px solid #eee; display: flex; align-items: center; gap: 10px;">
       <img id="user-avatar" src="" alt="" style="width: 48px; height: 48px; border-radius: 50%; object-fit: cover;">
       <span id="user-name" style="font-weight: bold; font-size: 16px;"></span>
     </div>
 
-    <!-- Контейнер боссов -->
     <div id="bosses-container"></div>
 
     <script>
       // 1. Инициализация
       vkBridge.send('VKWebAppInit');
 
-      // 2. Безопасное получение данных пользователя
+      // 2. Получение профиля
       vkBridge.send('VKWebAppGetUserInfo')
         .then(data => {
           const user = data.user;
           const avatarEl = document.getElementById('user-avatar');
           const nameEl = document.getElementById('user-name');
-          
-          if (avatarEl) avatarEl.src = user.photo_200 || user.photo_100 || 'https://via.placeholder.com/48';
+          if (avatarEl) avatarEl.src = user.photo_200 || user.photo_100;
           if (nameEl) nameEl.textContent = `${user.first_name} ${user.last_name}`;
         })
-        .catch(err => {
-          console.error('Ошибка VK Bridge:', err);
-          document.getElementById('user-info').innerHTML = '<span style="color:red">Ошибка загрузки профиля</span>';
-        });
+        .catch(err => console.error('Ошибка профиля:', err));
 
-      // 3. Безопасный рендер боссов
+      // 3. Рендер боссов
       const container = document.getElementById('bosses-container');
-
-      if (!container) {
-        console.error('Ошибка: элемент #bosses-container не найден в HTML');
-      } else if (typeof window.bosses === 'undefined') {
-        // Если массив не найден, показываем понятную ошибку в UI, а не ломаем всё
-        container.innerHTML = '<div style="color:red; padding:20px; border:1px solid red;">ОШИБКА: Файл data.js не подключен или переменная bosses не объявлена! Проверьте консоль (F12).</div>';
-        console.error('Критическая ошибка: массив bosses не найден. Проверьте data.js');
+      
+      if (container && typeof window.bosses !== 'undefined') {
+        container.innerHTML = window.bosses.map(b => `
+          <div class="boss-card" style="border: 1px solid #ddd; padding: 15px; margin-bottom: 15px; border-radius: 8px;">
+            <h3 style="margin:0;">\${b.name}</h3>
+            <p><strong>Уязвимость:</strong> \${b.weakness}</p>
+            <p><strong>Тактика:</strong> \${b.tactic}</p>
+            <p><strong>Выпадает:</strong></p>
+            <ul style="margin:5px 0 0 20px; padding:0;">
+              ${b.drops.map(drop => `<li style="margin-bottom:3px;">${drop}</li>`).join('')}
+            </ul>
+          </div>
+        `).join('');
       } else {
-        try {
-          container.innerHTML = window.bosses.map(b
-
+        if (!container) console.error('Нет элемента #bosses-container');
+        if (typeof window.bosses === 'undefined') console.error('Нет массива bosses в data.js');
+      }
+    </script>
+  </body>
+</html>
