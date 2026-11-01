@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Помощник по игре</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- Подключаем VK Bridge (обязательно для Mini App) -->
+    <script src="https://unpkg.com/@vkontakte/vk-bridge/dist/browser.min.js"></script>
+  </head>
+  <body>
+    <div class="header">Помощник по игре: справочник</div>
+
+    <div id="bosses-container"></div>
+
+    <script src="data.js"></script>
+    <script>
+      // Инициализация VK Bridge
+      vkBridge.send('VKWebAppInit');
+
+      const container = document.getElementById('bosses-container');
+
+      function renderBosses() {
+        container.innerHTML = bosses.map(b => `
+          <div class="boss-card">
+            <div class="boss-name">${b.name}</div>
+            <div class="weakness">Уязвимость: ${b.weakness}</div>
+            <div class="tactic"><strong>Тактика:</strong> ${b.tactic}</div>
+            <div class="drops"><strong>Выпадает:</strong>
+              <ul class="drops-list">
+                ${b.drops.map(drop => `<li>${drop}</li>`).join('')}
+              </ul>
+            </div>
+          </div>
+        `).join('');
+      }
+
+      renderBosses();
+    </script>
+  </body>
+</html>
