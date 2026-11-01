@@ -1,32 +1,13 @@
-<!DOCTYPE html>
-<html lang="ru">
-  <head>
-    <meta charset="UTF-8" />
-    <title>Game Lore</title>
-    <!-- 1. Сначала подключаем официальный скрипт VK Bridge -->
-    <script src="https://unpkg.com/@vkontakte/vk-bridge/dist/browser.min.js"></script>
-  </head>
-  <body>
-    <div id="app">Загрузка...</div>
-
-    <!-- 2. Потом твой код. Используем type="module" или обычный script -->
-    <!-- Если используешь модули, убедись, что пути верные -->
-    <script type="module" src="./main.js"></script>
-    
-    <!-- ИЛИ, если хочешь запустить код прямо в HTML без отдельного файла (для отладки): -->
-    <script>
-      // Инициализация моста
-      vkBridge.send('VKWebAppInit');
-
-      // Подписка на ответ
-      vkBridge.subscribe((e) => {
-        if (e.detail.type === 'VKWebAppInitResult') {
-          console.log('VK Bridge initialized', e.detail.data);
-          // Тут твой код получения профиля
-          const user = e.detail.data;
-          document.getElementById('app').innerHTML = `Привет, \${user.first_name}!`;
-        }
-      });
-    </script>
-  </body>
-</html>
+<head>
+  <meta charset="UTF-8">
+  <title>Bot Helper</title>
+  <link rel="stylesheet" href="style.css">
+  <!-- 1. Сначала подключаем VK Bridge -->
+  <script src="https://unpkg.com/@vkontakte/vk-bridge/dist/browser.min.js"></script>
+</head>
+<body>
+  <div id="app">Загрузка...</div>
+  
+  <!-- 2. Потом твой скрипт. Пути относительные -->
+  <script type="module" src="data.js"></script>
+</body>
