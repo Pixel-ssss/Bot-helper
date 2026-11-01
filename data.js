@@ -1,4 +1,3 @@
-// Инициализация
 vkBridge.send('VKWebAppInit');
 
 vkBridge.subscribe((e) => {
