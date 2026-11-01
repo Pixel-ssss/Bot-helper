@@ -1,97 +1,32 @@
 <!DOCTYPE html>
-<html>
+<html lang="ru">
   <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <meta charset="UTF-8" />
     <title>Game Lore</title>
-    <link rel="stylesheet" href="style.css">
-    <!-- Данные игры (загружаются синхронно, это ок) -->
-    <script src="data.js"></script>
+    <!-- 1. Сначала подключаем официальный скрипт VK Bridge -->
+    <script src="https://unpkg.com/@vkontakte/vk-bridge/dist/browser.min.js"></script>
   </head>
   <body>
-    <div class="container">
-      <div id="user-header" class="user-header">
-        <img id="user-avatar" class="avatar" src="" alt="">
-        <div>
-          <div id="user-name" style="font-weight:600;"></div>
-          <div style="color:#8b93a0; font-size:13px;">Справочник фракций и классов</div>
-        </div>
-      </div>
+    <div id="app">Загрузка...</div>
 
-      <h2>Фракции</h2>
-      <div id="factions-container"></div>
-
-      <h2>Классы</h2>
-      <div id="classes-container"></div>
-    </div>
-
-    <!-- 1. Сначала подключаем VK Bridge -->
-    <script src="https://unpkg.com/@vkontakte/vk-bridge/dist/browser.min.js"></script>
+    <!-- 2. Потом твой код. Используем type="module" или обычный script -->
+    <!-- Если используешь модули, убедись, что пути верные -->
+    <script type="module" src="./main.js"></script>
     
-    <!-- 2. Потом твой код логики -->
+    <!-- ИЛИ, если хочешь запустить код прямо в HTML без отдельного файла (для отладки): -->
     <script>
-      // 1. Сначала подписываемся на событие готовности VK Bridge
+      // Инициализация моста
+      vkBridge.send('VKWebAppInit');
+
+      // Подписка на ответ
       vkBridge.subscribe((e) => {
-        // 2. Проверяем, что это именно событие инициализации приложения
-        if (e.detail.type !== 'VKWebAppInit') return;
-    
-        // 3. Теперь безопасно запрашиваем данные пользователя
-        vkBridge.send('VKWebAppGetUserInfo')
-          .then(response => {
-            const user = response.user;
-            const avatarEl = document.getElementById('user-avatar');
-            const nameEl = document.getElementById('user-name');
-    
-            if (avatarEl) {
-              // Пробуем фото в порядке убывания качества
-              avatarEl.src = user.photo_200 || user.photo_100 || 'https://via.placeholder.com/48';
-            }
-            if (nameEl) {
-              nameEl.textContent = `${user.first_name} ${user.last_name}`;
-            }
-          })
-          .catch(err => {
-            console.error('Ошибка получения данных пользователя:', err);
-            // Для отладки можно вывести сообщение в UI
-            document.getElementById('user-name').textContent = 'Не удалось загрузить профиль';
-          });
-    
-        // 4. Рендер остального контента (фракции, классы)
-        renderContent();
+        if (e.detail.type === 'VKWebAppInitResult') {
+          console.log('VK Bridge initialized', e.detail.data);
+          // Тут твой код получения профиля
+          const user = e.detail.data;
+          document.getElementById('app').innerHTML = `Привет, \${user.first_name}!`;
+        }
       });
-    
-      function renderContent() {
-        const factionsContainer = document.getElementById('factions-container');
-        if (factionsContainer && window.gameData?.factions) {
-          factionsContainer.innerHTML = window.gameData.factions.map(f => `
-            <div class="card">
-              <h3>${f.name}</h3>
-              <span class="badge">${f.type}</span>
-              <p style="color:#5b616e; line-height:1.4;">${f.description}</p>
-              <ul class="list-bullet">
-                ${f.bonuses.map(b => `<li>${b}</li>`).join('')}
-              </ul>
-              <span class="weakness">Слабость: ${f.weakness}</span>
-            </div>
-          `).join('');
-        }
-    
-        const classesContainer = document.getElementById('classes-container');
-        if (classesContainer && window.gameData?.classes) {
-          classesContainer.innerHTML = window.gameData.classes.map(c => `
-            <div class="card">
-              <h3>${c.name}</h3>
-              <span class="badge">Роль: ${c.role}</span>
-              <p style="color:#5b616e; line-height:1.4;">${c.playstyle}</p>
-              <p><strong>Лучше всего сочетается с:</strong></p>
-              <ul class="list-bullet">
-                ${c.bestWith.map(t => `<li>${t}</li>`).join('')}
-              </ul>
-            </div>
-          `).join('');
-        }
-      }
     </script>
   </body>
 </html>
-
