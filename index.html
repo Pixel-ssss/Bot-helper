@@ -5,47 +5,64 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Помощник по игре</title>
     <link rel="stylesheet" href="style.css">
-    <!-- Подключаем VK Bridge -->
+    <!-- 1. Сначала подключаем библиотеку VK Bridge -->
     <script src="https://unpkg.com/@vkontakte/vk-bridge/dist/browser.min.js"></script>
-    <!-- ВАЖНО: Подключаем файл с данными ДО основного скрипта -->
+    <!-- 2. ВАЖНО: Сначала данные (массив bosses), потом логика -->
     <script src="data.js"></script>
   </head>
   <body>
-    <!-- Блок профиля пользователя -->
-    <div id="user-info" style="padding: 10px; border-bottom: 1px solid #eee;">
-      <img id="user-avatar" src="" alt="" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover; vertical-align: middle;">
-      <span id="user-name" style="margin-left: 10px; font-weight: bold; vertical-align: middle;"></span>
+    
+    <!-- Контейнер профиля (должен быть в HTML ДО скрипта) -->
+    <div id="user-info" style="padding: 10px; border-bottom: 1px solid #eee; display: flex; align-items: center; gap: 10px;">
+      <!-- Заглушка src обязательна, чтобы не было битой картинки до загрузки -->
+      <img id="user-avatar" src="" alt="" style="width: 48px; height: 48px; border-radius: 50%; object-fit: cover;">
+      <span id="user-name" style="font-weight: bold; font-size: 16px;"></span>
     </div>
 
     <!-- Контейнер для боссов -->
     <div id="bosses-container"></div>
 
     <script>
-      // 1. Инициализация VK Bridge
+      // 1. Инициализация (ОБЯЗАТЕЛЬНО первым делом)
       vkBridge.send('VKWebAppInit');
 
-      // 2. Получение данных пользователя (только ОДИН раз!)
+      // 2. Функция обновления профиля
+      function updateUserProfile(userData) {
+        const user = userData.user;
+        const avatarEl = document.getElementById('user-avatar');
+        const nameEl = document.getElementById('user-name');
+
+        if (avatarEl) {
+          // Пробуем фото 200, если нет - 100
+          avatarEl.src = user.photo_200 || user.photo_100 || '';
+        }
+        if (nameEl) {
+          nameEl.textContent = `${user.first_name} ${user.last_name}`;
+        }
+      }
+
+      // 3. Запрос данных пользователя
+      // Используем .then() сразу после init
       vkBridge.send('VKWebAppGetUserInfo')
         .then(data => {
-          const user = data.user;
-          const avatarEl = document.getElementById('user-avatar');
-          const nameEl = document.getElementById('user-name');
-          
-          if (avatarEl) avatarEl.src = user.photo_200 || user.photo_100;
-          if (nameEl) nameEl.textContent = `${user.first_name} ${user.last_name}`;
+          console.log('Данные пользователя получены:', data);
+          updateUserProfile(data);
         })
-        .catch(err => console.error('Ошибка получения данных пользователя:', err));
+        .catch(err => {
+          console.error('Ошибка получения данных пользователя:', err);
+          // Можно вывести сообщение об ошибке в UI, если нужно
+        });
 
-      // 3. Рендер боссов
+      // 4. Рендер боссов
       const container = document.getElementById('bosses-container');
 
       function renderBosses() {
         if (!container) {
-          console.error('Элемент #bosses-container не найден');
+          console.error('Контейнер #bosses-container не найден!');
           return;
         }
         if (typeof bosses === 'undefined') {
-          console.error('Массив bosses не найден. Проверьте подключение data.js');
+          console.error('Массив bosses не найден! Проверьте подключение data.js');
           return;
         }
 
@@ -63,7 +80,7 @@
         `).join('');
       }
 
-      // 4. Вызов функции
+      // Вызываем рендер
       renderBosses();
     </script>
   </body>
