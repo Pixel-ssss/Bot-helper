@@ -1,4 +1,3 @@
-// data.js
 window.bosses = [
   {
     name: "Чешуйчатый Карась",
