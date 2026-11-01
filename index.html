@@ -5,18 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
     <title>Game Lore</title>
     <link rel="stylesheet" href="style.css">
-
-    <!-- VK Bridge (вставлен прямо в код, чтобы не ломалось из-за CDN) -->
-    <script>
-      (function(w){var d=w.document,s=d.createElement('script');s.src='https://unpkg.com/@vkontakte/vk-bridge/dist/browser.min.js';s.onload=function(){w.vkBridgeReady=true;};d.head.appendChild(s);})(window);
-    </script>
-
-    <!-- Данные игры -->
+    <!-- Данные игры (загружаются синхронно, это ок) -->
     <script src="data.js"></script>
   </head>
   <body>
     <div class="container">
-      <!-- Профиль пользователя -->
       <div id="user-header" class="user-header">
         <img id="user-avatar" class="avatar" src="" alt="">
         <div>
@@ -25,67 +18,72 @@
         </div>
       </div>
 
-      <!-- Секция фракций -->
       <h2>Фракции</h2>
       <div id="factions-container"></div>
 
-      <!-- Секция классов -->
       <h2>Классы</h2>
       <div id="classes-container"></div>
     </div>
 
+    <!-- 1. Сначала подключаем VK Bridge -->
+    <script src="https://unpkg.com/@vkontakte/vk-bridge/dist/browser.min.js"></script>
+    
+    <!-- 2. Потом твой код логики -->
     <script>
-      // Инициализация VK Bridge
-      if (window.vkBridgeReady) {
-        vkBridge.send('VKWebAppInit');
-      } else {
-        window.addEventListener('vkBridgeReady', () => vkBridge.send('VKWebAppInit'));
-      }
+      // Инициализируем мост сразу после загрузки скрипта
+      vkBridge.send('VKWebAppInit');
 
-      // Загрузка профиля пользователя
-      vkBridge.send('VKWebAppGetUserInfo')
-        .then(data => {
-          const user = data.user;
-          const avatarEl = document.getElementById('user-avatar');
-          const nameEl = document.getElementById('user-name');
-          if (avatarEl) avatarEl.src = user.photo_200 || user.photo_100 || 'https://via.placeholder.com/48';
-          if (nameEl) nameEl.textContent = `${user.first_name} ${user.last_name}`;
-        })
-        .catch(err => {
-          console.error('Ошибка профиля:', err);
-        });
+      // Слушаем событие инициализации приложения от VK
+      vkBridge.on('VKWebAppInit', () => {
+        // Теперь безопасно работаем с API
+        
+        // Загрузка профиля
+        vkBridge.send('VKWebAppGetUserInfo')
+          .then(data => {
+            const user = data.user;
+            const avatarEl = document.getElementById('user-avatar');
+            const nameEl = document.getElementById('user-name');
+            
+            if (avatarEl) avatarEl.src = user.photo_200 || user.photo_100 || 'https://via.placeholder.com/48';
+            if (nameEl) nameEl.textContent = `${user.first_name} ${user.last_name}`;
+          })
+          .catch(err => {
+            console.error('Ошибка профиля:', err);
+          });
 
-      // Рендер фракций
-      const factionsContainer = document.getElementById('factions-container');
-      if (factionsContainer && window.gameData && window.gameData.factions) {
-        factionsContainer.innerHTML = window.gameData.factions.map(f => `
-          <div class="card">
-            <h3>${f.name}</h3>
-            <span class="badge">${f.type}</span>
-            <p style="color:#5b616e; line-height:1.4;">${f.description}</p>
-            <ul class="list-bullet">
-              ${f.bonuses.map(b => `<li>${b}</li>`).join('')}
-            </ul>
-            <span class="weakness">Слабость: ${f.weakness}</span>
-          </div>
-        `).join('');
-      }
+        // Рендер фракций
+        const factionsContainer = document.getElementById('factions-container');
+        if (factionsContainer && window.gameData && window.gameData.factions) {
+          factionsContainer.innerHTML = window.gameData.factions.map(f => `
+            <div class="card">
+              <h3>\${f.name}</h3>
+              <span class="badge">\${f.type}</span>
+              <p style="color:#5b616e; line-height:1.4;">\${f.description}</p>
+              <ul class="list-bullet">
+                ${f.bonuses.map(b => `<li>${b}</li>`).join('')}
+              </ul>
+              <span class="weakness">Слабость: \${f.weakness}</span>
+            </div>
+          `).join('');
+        }
 
-      // Рендер классов
-      const classesContainer = document.getElementById('classes-container');
-      if (classesContainer && window.gameData && window.gameData.classes) {
-        classesContainer.innerHTML = window.gameData.classes.map(c => `
-          <div class="card">
-            <h3>${c.name}</h3>
-            <span class="badge">Роль: ${c.role}</span>
-            <p style="color:#5b616e; line-height:1.4;">${c.playstyle}</p>
-            <p><strong>Лучше всего сочетается с:</strong></p>
-            <ul class="list-bullet">
-              ${c.bestWith.map(t => `<li>${t}</li>`).join('')}
-            </ul>
-          </div>
-        `).join('');
-      }
+        // Рендер классов
+        const classesContainer = document.getElementById('classes-container');
+        if (classesContainer && window.gameData && window.gameData.classes) {
+          classesContainer.innerHTML = window.gameData.classes.map(c => `
+            <div class="card">
+              <h3>\${c.name}</h3>
+              <span class="badge">Роль: \${c.role}</span>
+              <p style="color:#5b616e; line-height:1.4;">\${c.playstyle}</p>
+              <p><strong>Лучше всего сочетается с:</strong></p>
+              <ul class="list-bullet">
+                ${c.bestWith.map(t => `<li>${t}</li>`).join('')}
+              </ul>
+            </div>
+          `).join('');
+        }
+      });
     </script>
   </body>
 </html>
+
