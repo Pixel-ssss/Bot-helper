@@ -34,23 +34,24 @@
 
       // 3. Рендер боссов
       const container = document.getElementById('bosses-container');
-      
-      if (container && typeof window.bosses !== 'undefined') {
-        container.innerHTML = window.bosses.map(b => `
-          <div class="boss-card" style="border: 1px solid #ddd; padding: 15px; margin-bottom: 15px; border-radius: 8px;">
-            <h3 style="margin:0;">\${b.name}</h3>
-            <p><strong>Уязвимость:</strong> \${b.weakness}</p>
-            <p><strong>Тактика:</strong> \${b.tactic}</p>
-            <p><strong>Выпадает:</strong></p>
-            <ul style="margin:5px 0 0 20px; padding:0;">
-              ${b.drops.map(drop => `<li style="margin-bottom:3px;">${drop}</li>`).join('')}
-            </ul>
-          </div>
-        `).join('');
-      } else {
-        if (!container) console.error('Нет элемента #bosses-container');
-        if (typeof window.bosses === 'undefined') console.error('Нет массива bosses в data.js');
-      }
-    </script>
+  
+  if (container && typeof window.bosses !== 'undefined') {
+    // ВАЖНО: Используем обратные кавычки ` и синтаксис \${}
+    container.innerHTML = window.bosses.map(b => `
+      <div class="boss-card" style="border: 1px solid #ddd; padding: 15px; margin-bottom: 15px; border-radius: 8px; background: #f9f9f9;">
+        <h3 style="margin:0; color: #333;">\${b.name}</h3>
+        <p><strong>Уязвимость:</strong> \${b.weakness}</p>
+        <p><strong>Тактика:</strong> \${b.tactic}</p>
+        <p><strong>Выпадает:</strong></p>
+        <ul style="margin:5px 0 0 20px; padding:0;">
+          ${b.drops.map(drop => `<li style="margin-bottom:3px;">${drop}</li>`).join('')}
+        </ul>
+      </div>
+    `).join('');
+  } else {
+    if (!container) console.error('Элемент #bosses-container не найден');
+    if (typeof window.bosses === 'undefined') console.error('Массив bosses не загружен');
+  }
+</script>
   </body>
 </html>
