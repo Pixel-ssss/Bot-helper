@@ -4,7 +4,6 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>VK Profile Info</title>
-    <!-- Подключаем VK Bridge -->
     <script src="https://unpkg.com/@vkontakte/vk-bridge/dist/vk-bridge.js"></script>
     <style>
       body {
@@ -58,23 +57,28 @@
     </div>
 
     <script>
-      const bridge = window.VKBridge;
-
       async function init() {
+        const bridge = window.VKBridge;
+        const avatarEl = document.getElementById('avatar');
+        const nameEl = document.getElementById('last_name');
+        const statusEl = document.getElementById('status');
+
+        // Проверка: запущен ли код внутри VK Mini App
+        if (!bridge) {
+          statusEl.textContent = 'Ошибка: приложение запущено не внутри ВКонтакте';
+          statusEl.className = 'error';
+          console.error('VKBridge не найден. Запускай приложение через vk.com/app<ID>');
+          return;
+        }
+
         try {
-          // Инициализируем мост
           await bridge.send('VKWebAppInit');
 
-          // Запрашиваем данные пользователя (фото и фамилию)
           const response = await bridge.send('VKWebAppGetUserInfo', {
             fields: ['photo_200', 'last_name']
           });
 
           const { photo_200, last_name } = response;
-
-          const avatarEl = document.getElementById('avatar');
-          const nameEl = document.getElementById('last_name');
-          const statusEl = document.getElementById('status');
 
           if (photo_200) {
             avatarEl.src = photo_200;
@@ -84,20 +88,18 @@
           if (last_name) {
             nameEl.textContent = last_name;
           } else {
-            nameEl.textContent = 'Не указано';
+            nameEl.textContent = 'Фамилия не указана';
           }
 
           statusEl.textContent = '';
           statusEl.className = '';
         } catch (err) {
           console.error(err);
-          const statusEl = document.getElementById('status');
           statusEl.textContent = 'Ошибка получения данных';
           statusEl.className = 'error';
         }
       }
 
-      // Запускаем после загрузки страницы
       if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', init);
       } else {
