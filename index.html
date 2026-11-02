@@ -1,7 +1,108 @@
-<head>
-  <script src="https://unpkg.com/@vkontakte/vk-bridge/dist/browser.min.js"></script>
-</head>
-<body>
-  <div id="app">Загрузка...</div>
-  <script type="module" src="data.js"></script>
-</body>
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>VK Profile Info</title>
+    <!-- Подключаем VK Bridge -->
+    <script src="https://unpkg.com/@vkontakte/vk-bridge/dist/vk-bridge.js"></script>
+    <style>
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", sans-serif;
+        background: #f0f2f5;
+        color: #000;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        min-height: 100vh;
+        margin: 0;
+        padding: 20px;
+      }
+      .card {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        padding: 24px;
+        text-align: center;
+        max-width: 320px;
+        width: 100%;
+      }
+      img {
+        width: 96px;
+        height: 96px;
+        object-fit: cover;
+        border-radius: 50%;
+        margin-bottom: 16px;
+        border: 2px solid #e5e7eb;
+      }
+      h2 {
+        margin: 0 0 8px;
+        font-size: 18px;
+        line-height: 1.3;
+      }
+      p {
+        margin: 0;
+        color: #595959;
+        font-size: 14px;
+      }
+      .loading { color: #888; }
+      .error { color: #ff3b30; }
+    </style>
+  </head>
+  <body>
+    <div class="card">
+      <img id="avatar" src="" alt="Avatar" style="display:none;">
+      <h2 id="last_name">Загрузка...</h2>
+      <p id="status" class="loading">Получаем данные из ВКонтакте…</p>
+    </div>
+
+    <script>
+      const bridge = window.VKBridge;
+
+      async function init() {
+        try {
+          // Инициализируем мост
+          await bridge.send('VKWebAppInit');
+
+          // Запрашиваем данные пользователя (фото и фамилию)
+          const response = await bridge.send('VKWebAppGetUserInfo', {
+            fields: ['photo_200', 'last_name']
+          });
+
+          const { photo_200, last_name } = response;
+
+          const avatarEl = document.getElementById('avatar');
+          const nameEl = document.getElementById('last_name');
+          const statusEl = document.getElementById('status');
+
+          if (photo_200) {
+            avatarEl.src = photo_200;
+            avatarEl.style.display = 'block';
+          }
+
+          if (last_name) {
+            nameEl.textContent = last_name;
+          } else {
+            nameEl.textContent = 'Не указано';
+          }
+
+          statusEl.textContent = '';
+          statusEl.className = '';
+        } catch (err) {
+          console.error(err);
+          const statusEl = document.getElementById('status');
+          statusEl.textContent = 'Ошибка получения данных';
+          statusEl.className = 'error';
+        }
+      }
+
+      // Запускаем после загрузки страницы
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init);
+      } else {
+        init();
+      }
+    </script>
+  </body>
+</html>
