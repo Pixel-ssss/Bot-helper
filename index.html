@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Мой справочник</title>
+<style>
+  :root {
+    --bg: #19191a; --card: #232324; --text: #e1e3e6; --accent: #5d8bf4; --muted: #818c99;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; font-family:-apple-system,'Segoe UI',Roboto,sans-serif; }
+  body { background:var(--bg); color:var(--text); }
+  header { padding:14px 16px; font-size:20px; font-weight:700; }
+  nav { display:flex; gap:6px; padding:0 16px 10px; overflow-x:auto; }
+  nav button { flex-shrink:0; background:var(--card); color:var(--muted); border:none;
+    padding:8px 14px; border-radius:10px; font-size:14px; cursor:pointer; }
+  nav button.active { background:var(--accent); color:#fff; }
+  main { padding:12px 16px 32px; }
+  .card { background:var(--card); border-radius:14px; padding:16px; margin-bottom:10px; }
+  .card h3 { font-size:16px; margin-bottom:6px; }
+  .card p { font-size:14px; line-height:1.45; color:var(--muted); }
+  table { width:100%; border-collapse:collapse; font-size:14px; }
+  th, td { text-align:left; padding:8px 6px; border-bottom:1px solid #2c2d2e; }
+  th { color:var(--muted); font-weight:500; font-size:12px; text-transform:uppercase; }
+  .section { display:none; }
+  .section.active { display:block; }
+</style>
+</head>
+<body>
+<header id="title">Справочник</header>
+<nav id="nav"></nav>
+<main id="main"></main>
+
+<script>
+// ====== НАСТРОЙКИ: меняйте это под себя ======
+const APP = {
+  title: "Справочник",
+  sections: [
+    { id:"main", name:"Главное", cards:[
+      { h:"Добро пожаловать!", p:"Это шаблон справочника. Отредактируйте данные в блоке DATA ниже." },
+      { h:"Второй блок", p:"Здесь может быть любой текст: описание игры, новости, ссылки." }
+    ]},
+    { id:"bosses", name:"Боссы", table:[
+      ["Имя","Уровень","Награда"],
+      ["Слабый босс","10","100 золота"],
+      ["Средний босс","25","500 золота"],
+      ["Сильный босс","50","2000 золота"]
+    ]},
+    { id:"calc", name:"Калькулятор", type:"calc" }
+  ]
+};
+// ==============================================
+
+const nav = document.getElementById("nav"), main = document.getElementById("main");
+document.getElementById("title").textContent = APP.title;
+
+APP.sections.forEach((s,i)=>{
+  const b = document.createElement("button");
+  b.textContent = s.name;
+  b.onclick = ()=>{ document.querySelectorAll("nav button").forEach(x=>x.classList.remove("active"));
+    document.querySelectorAll(".section").forEach(x=>x.classList.remove("active"));
+    b.classList.add("active"); document.getElementById("sec-"+s.id).classList.add("active"); };
+  if(i===0) b.classList.add("active");
+  nav.appendChild(b);
+
+  const sec = document.createElement("div");
+  sec.className = "section" + (i===0 ? " active" : "");
+  sec.id = "sec-"+s.id;
+
+  if(s.cards) s.cards.forEach(c=>{
+    sec.insertAdjacentHTML("beforeend", `<div class="card"><h3>${c.h}</h3><p>${c.p}</p></div>`);
+  });
+  if(s.table){
+    let t = "<div class='card'><table><tr>" + s.table[0].map(h=>`<th>${h}</th>`).join("") + "</tr>";
+    s.table.slice(1).forEach(row=>{ t += "<tr>" + row.map(c=>`<td>${c}</td>`).join("") + "</tr>"; });
+    sec.insertAdjacentHTML("beforeend", t + "</table></div>");
+  }
+  if(s.type==="calc"){
+    sec.insertAdjacentHTML("beforeend", `
+      <div class="card"><h3>Пример калькулятора</h3>
+      <p>Введите число ×2:</p>
+      <input id="num" type="number" style="width:100%;padding:10px;margin:10px 0;border-radius:10px;border:1px solid #2c2d2e;background:#2c2d2e;color:#e1e3e6;">
+      <p id="res" style="color:var(--accent);font-weight:600;">—</p></div>`);
+    setTimeout(()=>{ const n=document.getElementById("num");
+      if(n) n.oninput = ()=> document.getElementById("res").textContent = n.value ? (n.value*2) : "—"; });
+  }
+  main.appendChild(sec);
+});
+</script>
+</body>
+</html>
